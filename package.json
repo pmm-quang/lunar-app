@@ -1,0 +1,36 @@
+{
+    "name": "lunar-calendar-app",
+    "version": "1.0.0",
+    "description": "Vue 3 Lunar Calendar Application",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vue-tsc && vite build",
+        "preview": "vite preview",
+        "type-check": "vue-tsc --noEmit"
+    },
+    "dependencies": {
+        "@nghiavuive/lunar_date_vi": "^2.0.1",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.0.0",
+        "date-fns": "^2.30.0",
+        "express": "^4.21.2",
+        "firebase": "^12.3.0",
+        "firebase-admin": "^12.7.0",
+        "lucide-vue-next": "^0.294.0",
+        "pinia": "^2.1.7",
+        "tailwind-merge": "^2.0.0",
+        "vue": "^3.4.0",
+        "vue-router": "^4.2.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.9.0",
+        "@vitejs/plugin-vue": "^4.5.0",
+        "autoprefixer": "^10.4.16",
+        "postcss": "^8.4.32",
+        "tailwindcss": "^3.3.6",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.0",
+        "vue-tsc": "^1.8.22"
+    }
+}

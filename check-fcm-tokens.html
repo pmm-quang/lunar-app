@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check FCM Tokens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Check FCM Tokens in Firestore</h1>
+
+    <div>
+        <button id="checkBtn">Check FCM Tokens</button>
+        <button id="clearBtn">Clear Logs</button>
+    </div>
+
+    <div id="logs"></div>
+
+    <div id="result"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+
+        const logsDiv = document.getElementById('logs')
+        const resultDiv = document.getElementById('result')
+
+        function log(message, type = 'info') {
+            const logDiv = document.createElement('div')
+            logDiv.className = `log ${type}`
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
+            logsDiv.appendChild(logDiv)
+            console.log(message)
+        }
+
+        function clearLogs() {
+            logsDiv.innerHTML = ''
+            resultDiv.innerHTML = ''
+        }
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5VEmvlRwkzquB3RtmyapRwteEiR8HH3s",
+            authDomain: "appp-16c20.firebaseapp.com",
+            projectId: "appp-16c20",
+            storageBucket: "appp-16c20.firebasestorage.app",
+            messagingSenderId: "742488165077",
+            appId: "1:742488165077:web:13f44a4e3a0f221892305c"
+        }
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig)
+        const db = getFirestore(app)
+
+        // Check FCM tokens
+        async function checkFCMTokens() {
+            try {
+                clearLogs()
+                log('Checking FCM tokens in Firestore...')
+
+                // Check fcm_tokens collection
+                const fcmTokensQuery = query(
+                    collection(db, 'fcm_tokens'),
+                    where('isActive', '==', true)
+                )
+
+                log('Querying fcm_tokens collection...')
+                const fcmTokensSnapshot = await getDocs(fcmTokensQuery)
+
+                log(`Found ${fcmTokensSnapshot.docs.length} FCM tokens in fcm_tokens collection`, 'success')
+
+                if (fcmTokensSnapshot.docs.length > 0) {
+                    const tokens = fcmTokensSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        userId: doc.data().userId,
+                        token: doc.data().token,
+                        createdAt: doc.data().createdAt,
+                        isActive: doc.data().isActive,
+                        deviceInfo: doc.data().deviceInfo
+                    }))
+
+                    resultDiv.innerHTML = `
+                        <h3>✅ FCM Tokens Found</h3>
+                        <p><strong>Total tokens:</strong> ${tokens.length}</p>
+                        <pre>${JSON.stringify(tokens, null, 2)}</pre>
+                    `
+
+                    // Show unique users
+                    const uniqueUsers = [...new Set(tokens.map(t => t.userId))]
+                    log(`Unique users with FCM tokens: ${uniqueUsers.length}`, 'success')
+                    log(`User IDs: ${uniqueUsers.join(', ')}`, 'info')
+
+                } else {
+                    resultDiv.innerHTML = `
+                        <h3>❌ No FCM Tokens Found</h3>
+                        <p>No active FCM tokens found in notifications collection.</p>
+                        <p>This means users haven't registered for notifications yet.</p>
+                    `
+                    log('No FCM tokens found in notifications collection', 'error')
+                }
+
+                // Check users collection
+                log('Checking users collection...')
+                const usersQuery = query(collection(db, 'users'))
+                const usersSnapshot = await getDocs(usersQuery)
+
+                log(`Found ${usersSnapshot.docs.length} users in users collection`, 'info')
+
+                if (usersSnapshot.docs.length > 0) {
+                    const users = usersSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        email: doc.data().email,
+                        role: doc.data().role,
+                        isActive: doc.data().isActive,
+                        createdAt: doc.data().createdAt
+                    }))
+
+                    log(`Users: ${JSON.stringify(users, null, 2)}`, 'info')
+                }
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error')
+                log(`Error details: ${error.stack}`, 'error')
+
+                resultDiv.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p><strong>Message:</strong> ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `
+            }
+        }
+
+        // Event listeners
+        document.getElementById('checkBtn').addEventListener('click', checkFCMTokens)
+        document.getElementById('clearBtn').addEventListener('click', clearLogs)
+
+        // Initial log
+        log('FCM Token Checker ready. Click "Check FCM Tokens" to start.')
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test VAPID Key</title>
+</head>
+
+<body>
+    <h1>Test VAPID Key</h1>
+    <button id="testBtn">Test FCM Token</button>
+    <div id="result"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'
+        import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js'
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5VEmvlRwkzquB3RtmyapRwteEiR8HH3s",
+            authDomain: "appp-16c20.firebaseapp.com",
+            projectId: "appp-16c20",
+            storageBucket: "appp-16c20.firebasestorage.app",
+            messagingSenderId: "742488165077",
+            appId: "1:742488165077:web:13f44a4e3a0f221892305c"
+        }
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig)
+        const messaging = getMessaging(app)
+
+        // Test VAPID key
+        const VAPID_KEY = 'BODsmEiK468gWjdPfPC2R8m0jN-_IxRicZ1F5WGHqhFoX0Ol2qdHGP1SNw2vhUodqSR13XBCCmlNgfCZysNI8Po'
+
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result')
+            resultDiv.innerHTML = 'Testing...'
+
+            try {
+                // Request permission
+                const permission = await Notification.requestPermission()
+                console.log('Permission:', permission)
+
+                if (permission !== 'granted') {
+                    resultDiv.innerHTML = '❌ Notification permission denied'
+                    return
+                }
+
+                // Get FCM token
+                const token = await getToken(messaging, {
+                    vapidKey: VAPID_KEY
+                })
+
+                if (token) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>FCM Token:</strong></p>
+                        <textarea readonly style="width: 100%; height: 100px;">${token}</textarea>
+                    `
+                    console.log('FCM Token:', token)
+                } else {
+                    resultDiv.innerHTML = '❌ No FCM token received'
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Error:</h3>
+                    <p>${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `
+                console.error('Error:', error)
+            }
+        })
+    </script>
+</body>
+
+</html>
